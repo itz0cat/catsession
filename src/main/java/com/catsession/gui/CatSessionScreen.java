@@ -9,6 +9,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.session.Session;
 import net.minecraft.text.Text;
 
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -169,7 +170,21 @@ public class CatSessionScreen extends Screen {
         MinecraftClient client = MinecraftClient.getInstance();
         Session activeSession = client.getSession();
         String activeUser = activeSession != null ? activeSession.getUsername() : "Unknown";
-        String activeType = activeSession != null ? activeSession.getAccountType().name() : "N/A";
+        String activeType = "MSA";
+        if (activeSession != null) {
+            try {
+                for (Method m : activeSession.getClass().getMethods()) {
+                    if (m.getName().toLowerCase().contains("accounttype") && m.getParameterCount() == 0) {
+                        Object val = m.invoke(activeSession);
+                        if (val != null) {
+                            activeType = val.toString();
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
         String uuidStr = (activeSession != null && activeSession.getUuidOrNull() != null)
                 ? activeSession.getUuidOrNull().toString()
                 : "00000000-0000-0000-0000-000000000000";
@@ -200,7 +215,6 @@ public class CatSessionScreen extends Screen {
                 context.fill(centerX - 185, cardY, centerX + 185, cardY + 22, bgColor);
 
                 String badge = "[" + p.getAccountType().toUpperCase() + "]";
-                int badgeColor = "msa".equalsIgnoreCase(p.getAccountType()) ? 0x55FF55 : 0xAAAAAA;
 
                 String rowText = (isSelected ? "▶ " : "  ") + p.getUsername() + " " + badge;
                 context.drawTextWithShadow(this.textRenderer, Text.literal(rowText), centerX - 180, cardY + 2, isSelected ? 0xFFFFAA : 0xFFFFFF);

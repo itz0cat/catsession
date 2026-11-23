@@ -1,8 +1,10 @@
 package com.catsession.auth;
 
 import com.catsession.util.CatSanitizer;
+import com.catsession.util.CatSessionLogger;
 import net.minecraft.client.session.Session;
 
+import java.lang.reflect.Constructor;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,7 +83,7 @@ public class AuthProfile {
     }
 
     public boolean isExpired() {
-        if (expiresAt <= 0) return false; // Offline / permanent
+        if (expiresAt <= 0) return false;
         return System.currentTimeMillis() > expiresAt;
     }
 
@@ -109,25 +111,53 @@ public class AuthProfile {
         this.lastUsedAt = System.currentTimeMillis();
     }
 
-    public Session.AccountType getMojangAccountType() {
-        if ("msa".equalsIgnoreCase(accountType)) {
-            return Session.AccountType.MSA;
-        } else if ("mojang".equalsIgnoreCase(accountType)) {
-            return Session.AccountType.MOJANG;
-        } else {
-            return Session.AccountType.LEGACY;
-        }
-    }
-
     public Session toMinecraftSession() {
-        return new Session(
-                this.username,
-                this.uuid,
-                this.accessToken,
-                Optional.ofNullable(this.xuid),
-                Optional.ofNullable(this.clientId),
-                getMojangAccountType()
-        );
+        try {
+            for (Constructor<?> ctor : Session.class.getConstructors()) {
+                Class<?>[] paramTypes = ctor.getParameterTypes();
+                if (paramTypes.length == 6) {
+                    Object accountTypeEnum = null;
+                    Class<?> enumClass = paramTypes[5];
+                    if (enumClass.isEnum()) {
+                        for (Object constant : enumClass.getEnumConstants()) {
+                            if (constant.toString().equalsIgnoreCase(this.accountType)) {
+                                accountTypeEnum = constant;
+                                break;
+                            }
+                        }
+                        if (accountTypeEnum == null && enumClass.getEnumConstants().length > 0) {
+                            accountTypeEnum = enumClass.getEnumConstants()[0];
+                        }
+                    }
+                    return (Session) ctor.newInstance(
+                            this.username,
+                            this.uuid,
+                            this.accessToken,
+                            Optional.ofNullable(this.xuid),
+                            Optional.ofNullable(this.clientId),
+                            accountTypeEnum
+                    );
+                } else if (paramTypes.length == 4) {
+                    Object accountTypeEnum = null;
+                    Class<?> enumClass = paramTypes[3];
+                    if (enumClass.isEnum()) {
+                        for (Object constant : enumClass.getEnumConstants()) {
+                            if (constant.toString().equalsIgnoreCase(this.accountType)) {
+                                accountTypeEnum = constant;
+                                break;
+                            }
+                        }
+                        if (accountTypeEnum == null && enumClass.getEnumConstants().length > 0) {
+                            accountTypeEnum = enumClass.getEnumConstants()[0];
+                        }
+                    }
+                    return (Session) ctor.newInstance(this.username, this.uuid, this.accessToken, accountTypeEnum);
+                }
+            }
+        } catch (Exception e) {
+            CatSessionLogger.error("Failed to construct Minecraft Session reflectively: " + e.getMessage());
+        }
+        return null;
     }
 
     @Override
