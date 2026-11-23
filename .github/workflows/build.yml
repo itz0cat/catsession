@@ -41,8 +41,12 @@ jobs:
           if [ -n "$JAR_FILE" ]; then
             echo "Inspecting $JAR_FILE"
             jar tf "$JAR_FILE" | grep -E "fabric.mod.json|CatSessionMod|CatSessionScreen"
-            cp "$JAR_FILE" build/libs/catsession.1.0.1.jar
-            cp "$JAR_FILE" build/libs/catsession-1.0.1.jar
+            if [ "$JAR_FILE" != "build/libs/catsession-1.0.1.jar" ]; then
+              cp "$JAR_FILE" build/libs/catsession-1.0.1.jar
+            fi
+            if [ "$JAR_FILE" != "build/libs/catsession.1.0.1.jar" ]; then
+              cp "$JAR_FILE" build/libs/catsession.1.0.1.jar
+            fi
           else
             echo "Error: Remapped jar not found!"
             exit 1
