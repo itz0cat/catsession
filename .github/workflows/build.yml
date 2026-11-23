@@ -33,7 +33,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --stacktrace --no-daemon
 
-      - name: Verify Built Jar
+      - name: Verify and Package Built Jars
         run: |
           echo "=== Built Jars ==="
           ls -la build/libs/
@@ -41,6 +41,8 @@ jobs:
           if [ -n "$JAR_FILE" ]; then
             echo "Inspecting $JAR_FILE"
             jar tf "$JAR_FILE" | grep -E "fabric.mod.json|CatSessionMod|CatSessionScreen"
+            cp "$JAR_FILE" build/libs/catsession.1.0.1.jar
+            cp "$JAR_FILE" build/libs/catsession-1.0.1.jar
           else
             echo "Error: Remapped jar not found!"
             exit 1
