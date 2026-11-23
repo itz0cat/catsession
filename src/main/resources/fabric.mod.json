@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "catsession",
+  "version": "${version}",
+  "name": "CatSession Manager",
+  "description": "Local-only Minecraft Fabric session management utility with AES-256-GCM encrypted storage and official Microsoft Device Code Flow.",
+  "authors": [
+    "Itz0Cat"
+  ],
+  "contact": {
+    "homepage": "https://itz0cat.vercel.app",
+    "sources": "https://github.com/itz0cat/catsession"
+  },
+  "license": "MIT",
+  "icon": "assets/catsession/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.catsession.CatSessionMod"
+    ]
+  },
+  "mixins": [
+    "catsession.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.0",
+    "minecraft": "~1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
