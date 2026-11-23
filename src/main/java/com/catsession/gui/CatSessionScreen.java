@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Main In-Game GUI for CatSession Manager.
  * Displays the current session securely, lists authorized profiles,
- * and allows explicit session switching, deletion, and data clearance.
+ * and allows explicit session switching, token import, deletion, and data clearance.
  */
 public class CatSessionScreen extends Screen {
 
@@ -58,7 +58,7 @@ public class CatSessionScreen extends Screen {
                     selectedIndex = -1;
                     refreshButtons();
                 }
-            }).dimensions(centerX - 180, 160, 50, 20).build());
+            }).dimensions(centerX - 185, 160, 50, 20).build());
 
             this.addDrawableChild(ButtonWidget.builder(Text.literal("Next ▶"), button -> {
                 if (page < maxPages - 1) {
@@ -66,7 +66,7 @@ public class CatSessionScreen extends Screen {
                     selectedIndex = -1;
                     refreshButtons();
                 }
-            }).dimensions(centerX + 130, 160, 50, 20).build());
+            }).dimensions(centerX + 135, 160, 50, 20).build());
         }
 
         // Selection buttons for visible items
@@ -78,7 +78,7 @@ public class CatSessionScreen extends Screen {
             this.addDrawableChild(ButtonWidget.builder(Text.literal("Select"), button -> {
                 selectedIndex = itemIndex;
                 refreshButtons();
-            }).dimensions(centerX + 110, cardY, 50, 18).build());
+            }).dimensions(centerX + 115, cardY, 50, 18).build());
         }
 
         // Action Buttons - Row 1
@@ -98,22 +98,28 @@ public class CatSessionScreen extends Screen {
                 statusFeedback = "Please select a profile first.";
                 feedbackColor = 0xFFAA00;
             }
-        }).dimensions(centerX - 180, bottomY, 115, 20).build());
+        }).dimensions(centerX - 185, bottomY, 118, 20).build());
+
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Import Token"), button -> {
+            if (this.client != null) {
+                this.client.setScreen(new TokenImportScreen(this));
+            }
+        }).dimensions(centerX - 62, bottomY, 122, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Login via MS"), button -> {
             if (this.client != null) {
                 this.client.setScreen(new DeviceCodeModalScreen(this));
             }
-        }).dimensions(centerX - 60, bottomY, 115, 20).build());
+        }).dimensions(centerX + 65, bottomY, 120, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Import Offline"), button -> {
+        // Action Buttons - Row 2
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Offline"), button -> {
             if (this.client != null) {
                 this.client.setScreen(new ManualImportScreen(this));
             }
-        }).dimensions(centerX + 60, bottomY, 120, 20).build());
+        }).dimensions(centerX - 185, bottomY + 25, 88, 20).build());
 
-        // Action Buttons - Row 2
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Delete Session"), button -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Delete"), button -> {
             if (selectedIndex >= 0 && selectedIndex < profiles.size()) {
                 AuthProfile profile = profiles.get(selectedIndex);
                 if (this.client != null) {
@@ -133,9 +139,9 @@ public class CatSessionScreen extends Screen {
                 statusFeedback = "Select a profile to delete.";
                 feedbackColor = 0xFFAA00;
             }
-        }).dimensions(centerX - 180, bottomY + 25, 115, 20).build());
+        }).dimensions(centerX - 92, bottomY + 25, 88, 20).build());
 
-        this.addDrawableChild(ButtonWidget.builder(Text.literal("Clear All Data"), button -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.literal("Clear All"), button -> {
             if (this.client != null) {
                 this.client.setScreen(new ConfirmActionScreen(
                         this,
@@ -150,11 +156,11 @@ public class CatSessionScreen extends Screen {
                         }
                 ));
             }
-        }).dimensions(centerX - 60, bottomY + 25, 115, 20).build());
+        }).dimensions(centerX + 1, bottomY + 25, 88, 20).build());
 
         this.addDrawableChild(ButtonWidget.builder(Text.literal("Close"), button -> {
             close();
-        }).dimensions(centerX + 60, bottomY + 25, 120, 20).build());
+        }).dimensions(centerX + 94, bottomY + 25, 91, 20).build());
     }
 
     @Override
@@ -203,7 +209,7 @@ public class CatSessionScreen extends Screen {
         int endIndex = Math.min(startIndex + ITEMS_PER_PAGE, profiles.size());
 
         if (profiles.isEmpty()) {
-            context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("No authorized sessions saved. Click 'Login via MS' or 'Import Offline'."), centerX, 100, 0x777777);
+            context.drawCenteredTextWithShadow(this.textRenderer, Text.literal("No authorized sessions saved. Click 'Import Token' or 'Login via MS'."), centerX, 100, 0x777777);
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
             for (int i = startIndex; i < endIndex; i++) {
